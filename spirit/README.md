@@ -1,5 +1,5 @@
 # 2022-Interaction-Studies
 
-Imagine an interactive environment: “The Great Interactive Reef”. For this environment you will not have to wear a wet-suit. You can walk through the reef and interact with the reef-creatures to explore and experience their unique behaviours or try to identify the how a benevolent spirit influences all of the creatures, and ultimately controls when they go to sleep.
+This directory contains the code to perfomr the spirit action in the Great Interactive Reef. There should be only one running in the reef?!
 
-This repository holds the code for the benevolent spirit controlling the reef and the code-template for the creatures that the minor students will implement in the first two weeks of the Interactive Environmnets minor.
+The files in this directory perform the logic of making day/night happen as well as the distribution of energy level information to the creatures. In addition there is a digital twim UI that shows what is happening in the Great Interactive Reef and makes it possible to steer some benevolent spirit actions.

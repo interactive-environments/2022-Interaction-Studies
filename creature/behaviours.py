@@ -10,8 +10,23 @@ leds = p9813.P9813(pin_clk, pin_data, num_leds)
 leds.fill((0, 0, 0))
 leds.write()
 
+def showAlive():
+    leds.fill((255, 255, 255))
+    leds.write()
+    time.sleep(0.5)
+    leds.fill((0, 0, 0))
+    leds.write()
+    time.sleep(0.5)
+    leds.fill((255, 255, 255))
+    leds.write()
+    time.sleep(0.5)
+    leds.fill((0, 0, 0))
+    leds.write()
+    time.sleep(0.5)
+    return
+
 def behaveDayNoCompany(energy):
-    leds.fill((0, 0, 55+(energy*5)))
+    leds.fill((0, 0, 10+(energy*5)))
     leds.write()
     return
 
@@ -21,7 +36,7 @@ def behaveDayCompany(energy):
     return
 
 def behaveNightNoCompany(energy):
-    leds.fill((0, 55+(energy*5), 0))
+    leds.fill((0, 10+(energy*5), 0))
     leds.write()
     return
 

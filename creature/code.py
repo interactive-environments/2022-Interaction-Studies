@@ -12,7 +12,6 @@ import neopixel
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-
 import adafruit_minimqtt as MQTT
 
 ### WiFi ###
@@ -20,12 +19,13 @@ import adafruit_minimqtt as MQTT
 try:
     from settings import settings
 except ImportError:
-    print("WiFi settings are kept in settings.py, please add them there!")
+    print("WiFi settings are kept in settings.py, please add or change them there!")
     raise
 
 
 from state_machines import State_machines
 state_machines = State_machines()
+
 import behaviours
 import senses
 
@@ -88,6 +88,8 @@ mqtt_client.on_message = message
 # Connect the client to the MQTT broker.
 print("Connecting to MQTT broker...")
 mqtt_client.connect()
+
+behaviours.showAlive()
 
 # Start a blocking message loop...
 # NOTE: NO code below this loop will execute

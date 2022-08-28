@@ -6,7 +6,7 @@ class State_machines():
         self.timer = Timer()
         self.timer.set_duration(1)
         self.state = 0 # Our state starts at 0, it can go up to 3. We use this number to keep track of 2 on or off variables
-    # One variable is whether we have company. Here we use either 0 or 1 for this. 
+    # One variable is whether we have company. Here we use either 0 or 1 for this.
     # The second variable is whether it is day or night, for this we use 0 or 2.
     # When we combine these numbers we get either 0, 1, 2 or 3. Every combination of variables leads to a different number, thus we don't need to remember 2 numbers. Only this one.
     def setTime(self, time):
@@ -19,11 +19,10 @@ class State_machines():
             self.timer.set_duration(1 + 9*(1-company))
         tempState = (self.state - self.state%2) # Here we remove either 0 or 1 from state. Thus making our state either 0 or 2. Thus we will know whether it is day or night.
         self.state = tempState + company # Then we add either 0 or 1, saving whether we have company or not.
-        
+
     def incrementEnergy(self):
         self.energy = min(self.energy+1, 10)
-        
-    
+
     def checkEnergy(self, mqtt_client):
         if self.timer.expired():
             self.timer.start()
@@ -33,7 +32,7 @@ class State_machines():
                 self.energy = max(self.energy-1, 0)
             mqtt_client.publish("energy-level", settings["clientid"]+", "+str(self.energy))
             print("Energy level: "+str(self.energy))
-            
+
     def behave(self, behaviours, mqtt_client):
         self.checkEnergy(mqtt_client)
         if self.state == 0:
@@ -44,4 +43,4 @@ class State_machines():
             behaviours.behaveDayNoCompany(self.energy)
         else:
             behaviours.behaveDayCompany(self.energy)
-            
+

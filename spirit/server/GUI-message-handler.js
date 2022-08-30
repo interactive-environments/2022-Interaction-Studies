@@ -143,7 +143,7 @@ function sendEnergyUpdateToGUIs(creature, guis) {
     for (let ws of guis) {
         ws.send(JSON.stringify({
             messageType: "updateEnergy",
-            name: creature.name,
+            name: creature.name + "-" + creature.clientId,
             energy: creature.energyLevel
         }))
     }
@@ -168,7 +168,7 @@ function sendAddedToGUIs(creature, guis) {
     for (let ws of guis) {
         ws.send(JSON.stringify({
             messageType: "addCreature",
-            name: creature.name,
+            name: creature.name + "-" + creature.clientId,
             energy: creature.energyLevel
         }))
     }
@@ -179,7 +179,7 @@ function sendTimeOutToGUIs(creature, guis) {
     for (let ws of guis) {
         ws.send(JSON.stringify({
             messageType: "timeoutCreature",
-            name: creature.name,
+            name: creature.name + "-" + creature.clientId,
             energy: creature.energyLevel
         }))
     }

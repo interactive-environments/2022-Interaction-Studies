@@ -41,23 +41,57 @@ socket.addEventListener('open', function (event) {
   print("Connected to server")
   updateInterval();
   
+    let timeDay = 0;
+  if (day == true){
+    timeDay = 1;
+  }
+  
+  socket.send(JSON.stringify({
+        password: "InteractiveEnvironments2022",
+        messageType: "changeDayNight",
+        timeOfDay: timeDay
+    }));
+  
 });
 
 socket.addEventListener('message', function (event) {
     let data = JSON.parse(event.data)
-    print(data)
     if(data.hasOwnProperty("messageType")){
       if (data.messageType == "addCreature"){
+        print(data)
         addCreature(data);
-      }
+      } 
       if(data.messageType == "updateEnergy"){
+        print(data)
         updateEnergy(data)
       }
       if(data.messageType == "pulse"){
         onPulse();
       }
+      if(data.messageType == "neighbours"){
+        print(data)
+        //updateNeighbors(data);
+      }
     }
 });
+
+function updateNeighbors(jsonString){
+  neighbors = jsonString.neighbours
+  amtEntries = Object.keys(neighbors).length;
+  for (i = 0; i < amtEntries; i++){
+    for (j=0; j < creatures.length; j++){
+      if (creatures[j].id == i){
+        for (k=0; k < Object.values(neighbors)[i].length; k++){
+          let newNeighbor = Object.values(neighbors)[i][k];
+          creatures[j].neighbors.push(newNeighbor);
+          // print("Added neighbor")
+        }
+        break;
+      }
+    }
+    
+  }
+}
 
 function preload() {
   sun = loadImage('sun.png');
@@ -77,18 +111,44 @@ function setup() {
   // Creatures
   initSpirit();
   
-  for(i = 0; i < 18; i++){
-  jsonString = JSON.stringify({
-    "messageType": "addCreature",
-    "name": "creature " + creatureCount,
-    "energy": random(0, 10)
-  });
+//   for(i = 0; i < 16; i++){
+//   jsonString = JSON.stringify({
+//     "messageType": "addCreature",
+//     "name": "creature"+i+"-" + i,
+//     "energy": random(0, 10),
+//     "neighbors": []
+//   });
     
-  if (JSON.parse(jsonString).messageType == "addCreature"){
-     addCreature(JSON.parse(jsonString)); 
-    }
-  }
-  creatures[1].setEnergy(0);
+//   if (JSON.parse(jsonString).messageType == "addCreature"){
+//      addCreature(JSON.parse(jsonString)); 
+//     }
+//   }
+  
+//   jsonString = JSON.stringify(
+//   {
+//     messageType: "neighbours",
+//     name: "name",
+//     neighbours: {
+//     0: [1,14],
+//     1: [0,2],
+//     2: [1,3],
+//     3: [2,4],
+//     4: [3,5],
+//     5: [4,6],
+//     6: [5,7],
+//     7: [6,8],
+//     8: [7,9],
+//     9: [8,10],
+//     10: [9,11],
+//     11: [10,12],
+//     12: [11,13],
+//     13: [12,14],
+//     14: [13,0]  
+//     }
+//   });
+  
+//   updateNeighbors(JSON.parse(jsonString));
+    
   
   // Time pulse
   timeSlider = createSlider(5, 15, 0);
@@ -142,6 +202,7 @@ function setBG(){
 }
 
 function draw() {
+    noStroke()
   setBG();
   fill(255)
   textSize(14)
@@ -190,6 +251,36 @@ function draw() {
   }
   
   fill(255);
+  
+  displayNeighbors();
+}
+
+function displayNeighbors(){
+  stroke(255)
+  strokeWeight(2)
+  let done = [];
+  
+  for (i=0; i < creatures.length; i++){
+    let neighbors = creatures[i].neighbors
+    if (typeof(neighbors) !== "undefined"){
+    let startx = creatures[i].x
+    let starty = creatures[i].y
+    for (j=0; j < neighbors.length; j++){
+        let findID = neighbors[j]
+        for (k = 0; k < creatures.length; k++){
+          let foundID =  parseInt(creatures[k].id)
+          if (findID == foundID){
+            let endx = creatures[k].x
+            let endy = creatures[k].y
+
+            line(startx, starty, endx, endy)
+
+        }
+      }
+    
+    }
+  }
+  }
 }
 
 function windowResized() {
@@ -218,7 +309,7 @@ function buttonSetup(){
 }
 
 function updateInterval(){
-  this.timePulse = timeSlider.value();
+  // this.timePulse = timeSlider.value();
   socket.send(JSON.stringify({
         password: "InteractiveEnvironments2022",
         messageType: "updateInterval",
@@ -256,7 +347,7 @@ function onPulse(){
 function initSpirit(){
   let x = windowWidth/2-35;
   let y = 150;
-  this.spirit = new Creature("Benevolent Spirit", x, y, 1);
+  this.spirit = new Creature("Benevolent Spirit", x, y, 1, []);
 }
 
 function addCreature(jsonString){
@@ -266,7 +357,7 @@ function addCreature(jsonString){
     y = random(windowHeight/4*3, windowHeight-70);
   }
   
-  creatures.push(new Creature(jsonString.name, x, y, jsonString.energy));
+  creatures.push(new Creature(jsonString.name, x, y, jsonString.energy, jsonString.neighbors));
   creatureCount++;
   
   resetCreaturePos();
@@ -275,13 +366,14 @@ function addCreature(jsonString){
 function updateEnergy(jsonString){
   let match = false;
   for (i = 0; i < creatures.length; i++){
-    if (creatures[i].name == jsonString.name){
+    if (creatures[i].name == jsonString.name.split("-")[0]){
       creatures[i].setEnergy(jsonString.energy);
       match = true;
     }
   }
-  print("Match found: " + match);
-  
+  if (match == false){
+    addCreature(jsonString);
+  }
 }
 
 function resetCreaturePos(){
@@ -297,18 +389,26 @@ function resetCreaturePos(){
 
 // Creature class
 class Creature{
-  constructor(name, x, y, energy){
-  this.name = name;
+  constructor(name, x, y, energy, neighbors){
+  this.name = name.split("-")[0];
+  this.id = name.split("-")[1];
   this.x = x;
   this.y = y;
   
+  if (typeof(energy) == "undefined"){
+      this.energy = 0;
+    } else{
   this.energy = energy;
+    }
   this.zoff = random(-10, 10);
   this.opacity = 100;
     
   this.floatrange = [y - 20, y + 20];
   this.floatx = random(0, 10);
   this.floaty = random(0, 10);
+    
+  this.neighbors = neighbors;
+    
   }
   
   display(){
@@ -317,9 +417,10 @@ class Creature{
     let detailLevel = 0.3;
     let sizeranges = [2, 10, 20, 40];
     let zrange = [0.005, 0.0375];
-    let textplacement = [25, 45];
+    let textplacement = [0, 45];
     
     if(this.name == "Benevolent Spirit"){
+      textAlign(LEFT);
       fill(255, 255, 255, this.opacity)
        stroke(255, 255, 255, 255)
       detailLevel = 0.05;
@@ -328,6 +429,7 @@ class Creature{
       textplacement = [50, 130]; 
     } 
     else {
+      textAlign(CENTER);
       if(this.energy == 0){
         blendMode(MULTIPLY);
         fill(150, 150, 150, 130)
@@ -375,6 +477,7 @@ class Creature{
     fill(255, 255, 255);
     text(this.name, this.x-textplacement[0], this.y+textplacement[1]);
     blendMode(BLEND);
+    textAlign(LEFT);
   }
   
   setPos(x, y){

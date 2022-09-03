@@ -357,10 +357,15 @@ function addCreature(jsonString){
     y = random(windowHeight/4*3, windowHeight-70);
   }
   
-  creatures.push(new Creature(jsonString.name, x, y, jsonString.energy, jsonString.neighbors));
-  creatureCount++;
-  
-  resetCreaturePos();
+  for (i = 0; i < creatures.length; i++){
+    if (creatures[i].name == jsonString.name.split("-")[0]){
+      return;
+    }
+  }
+        creatures.push(new Creature(jsonString.name, x, y, jsonString.energy, jsonString.neighbors));
+      creatureCount++;
+
+      resetCreaturePos();
 }
 
 function updateEnergy(jsonString){

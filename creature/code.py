@@ -22,9 +22,10 @@ except ImportError:
     print("WiFi settings are kept in settings.py, please add or change them there!")
     raise
 
-
 from state_machines import State_machines
 state_machines = State_machines()
+
+import components.ToF
 
 import behaviours
 import senses
@@ -50,21 +51,15 @@ def message(client, topic, message):
         state_machines.setTime(int(message))
     elif topic == "energy-increment-"+settings["clientid"]:
         state_machines.incrementEnergy()
-    print("New message on topic {0}: {1}".format(topic, message))
+#     print("New message on topic {0}: {1}".format(topic, message))
 
 ### MQTT connection functions ###
-# Define callback methods which are called when events occur
-# pylint: disable=unused-argument, redefined-outer-name
 def connected(client, userdata, flags, rc):
-    # This function will be called when the client is connected
-    # successfully to the broker.
     print("Connected to MQTT broker! Listening for topic changes on %s" % default_topic)
-    # Subscribe to all changes on the default_topic feed.
     client.subscribe("time-of-day")
     client.subscribe("energy-increment-"+settings["clientid"])
 
 def disconnected(client, userdata, rc):
-    # This method is called when the client is disconnected
     print("Disconnected from MQTT Broker!")
 
 # Connect to WiFi
@@ -72,32 +67,34 @@ print("Connecting to WiFi...")
 wifi.connect()
 print("Connected!")
 
-# Initialize MQTT interface with the esp interface
 MQTT.set_socket(socket, esp)
-
-# Set up a MiniMQTT Client
 mqtt_client = MQTT.MQTT(
     broker=settings["broker"], username=settings["user"], password=settings["token"], client_id = settings["clientid"]
 )
 
-# Setup the callback methods above
 mqtt_client.on_connect = connected
 mqtt_client.on_disconnect = disconnected
 mqtt_client.on_message = message
 
-# Connect the client to the MQTT broker.
 print("Connecting to MQTT broker...")
 mqtt_client.connect()
+mqtt_client.publish("names", settings["displayname"] + "-" + settings["clientid"])
 
-behaviours.showAlive()
-
-# Start a blocking message loop...
-# NOTE: NO code below this loop will execute
-# NOTE: Network reconnection is handled within this loop
 while True:
     senses.sense(state_machines)
     state_machines.behave(behaviours, mqtt_client)
-    print(state_machines.state)
+
+#     print(last_state, state_machines.state)
+    if (state_machines.last_state == 0 or state_machines.last_state == 2) and (state_machines.state == 1 or state_machines.state == 3):
+        print("Presence detected")
+    elif (state_machines.last_state == 1 or state_machines.last_state == 3) and (state_machines.state == 0 or state_machines.state == 2):
+        print("Presence no longer detected")
+
+    if (state_machines.last_state == 0 or state_machines.last_state == 1) and (state_machines.state == 2 or state_machines.state == 3):
+        print("It is now daytime.")
+    if (state_machines.last_state == 2 or state_machines.last_state == 3) and (state_machines.state == 0 or state_machines.state == 1):
+        print("It is now nighttime.")
+
     if timer.expired:
         timer.start()
         try:

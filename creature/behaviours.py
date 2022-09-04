@@ -24,14 +24,65 @@ from components.servo_motor import Servo
 servo = Servo()
 # servo.update(100)
 
+# this is the current energy level of the creature
+energy = 0
+
+# BEHAVIOUR FOR OUTPUT 1
+# first set the the output for this behaviour
+output_1 = leds
+# Theses are the min and maximum value of the outputs
+output_1_INTITIAL = 0
+output_1_MAX = 255
+output_1_MIN = 0
+
+# this is the behaviour sequence for when someone is interacting by during the day
+output_1_day_no_company_behaviour = [(output_1_MAX, 15/(energy+1), 200, "QuadEaseIn"),(output_1_MIN, 15/(energy+1), 200, "QuadEaseOut")]
+# this is the behaviour sequence for when someone is not by during the day
+output_1_day_company_behaviour = [(output_1_MAX, 5/(energy+1), 200, "QuadEaseIn"),(output_1_MIN, 5/(energy+1), 200, "QuadEaseOut")]
+# this is the behaviour sequence for when someone is interacting by during the night
+output_1_night_no_company_behaviour = [(output_1_MAX/2, 15/(energy+1), 200, "QuadEaseIn"),(output_1_MIN, 15/(energy+1), 200, "QuadEaseOut")]
+# this is the behaviour sequence for when someone is not by during the night
+output_1_night_company_behaviour = [(output_1_MAX/2, 5/(energy+1), 200, "QuadEaseIn"),(output_1_MIN, 5/(energy+1), 200, "QuadEaseOut")]
+
+# BEHAVIOUR FOR OUTPUT 2
+# first set the the output for this behaviour
+output_2 = buzzer
+# Theses are the min and maximum value of the outputs
+output_2_INTITIAL = 0
+output_2_MAX = 100
+output_2_MIN = 0
+
+# this is the behaviour sequence for when someone is interacting by during the day
+output_2_day_no_company_behaviour = [(output_2_MAX, 15/(energy+1), 200, "QuadEaseIn"),(output_2_MIN, 15/(energy+1), 200, "QuadEaseOut")]
+# this is the behaviour sequence for when someone is not by during the day
+output_2_day_company_behaviour = [(output_2_MAX/2, 5/(energy+1), 200, "QuadEaseIn"),(output_2_MIN/2, 5/(energy+1), 200, "QuadEaseOut")]
+# this is the behaviour sequence for when someone is interacting by during the night
+output_2_night_no_company_behaviour = [(output_2_MAX, 15/(energy+1), 200, "QuadEaseIn"),(output_2_MIN, 15/(energy+1), 200, "QuadEaseOut")]
+# this is the behaviour sequence for when someone is not by during the night
+output_2_night_company_behaviour = [(output_2_MAX/2, 5/(energy+1), 200, "QuadEaseIn"),(output_2_MIN/2, 5/(energy+1), 200, "QuadEaseOut")]
+
+
+# CODE FOR EXECUTING BEHAVIOURS
+
+def behave_day_no_company(output_1_behaviour_value, output_2_behaviour_value):
+    output_1.update((0, output_1_behaviour_value, 0))
+    output_2.update(output_2_behaviour_value)
+
+def behave_day_company(output_1_behaviour_value, output_2_behaviour_value):
+    output_1.update((0, output_1_behaviour_value, 0))
+    output_2.update(output_2_behaviour_value)
+
+def behave_night_no_company(output_1_behaviour_value, output_2_behaviour_value):
+    output_1.update((0, output_1_behaviour_value, 0))
+    output_2.update(output_2_behaviour_value)
+
+def behave_night_company(output_1_behaviour_value, output_2_behaviour_value):
+    output_1.update((0, output_1_behaviour_value, 0))
+    output_2.update(output_2_behaviour_value)
 
 
 
 # old code, dit wordt denk ik vanaf nu door Caspar's code geregeld:
-
-
-
-
 # pin_clk = board.D13
 # pin_data = board.D10
 # num_leds = 1

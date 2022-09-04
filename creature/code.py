@@ -22,13 +22,14 @@ except ImportError:
     print("WiFi settings are kept in settings.py, please add or change them there!")
     raise
 
-from state_machines import State_machines
-state_machines = State_machines()
-
 import components.ToF
 
 import behaviours
 import senses
+
+from state_machines import State_machines
+state_machines = State_machines(behaviours=behaviours)
+
 
 # If you have an externally connected ESP32:
 esp32_cs = DigitalInOut(board.D9)               # Chip select pin

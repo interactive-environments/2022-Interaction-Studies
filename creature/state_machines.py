@@ -1,7 +1,16 @@
 from timer import Timer
 from settings import settings
+from varspeed import Vspeed
+
 class State_machines():
-    def __init__(self):
+    def __init__(self, behaviours):
+
+        self.vs1 = Vspeed(init_position=behaviours.output_1_INTITIAL, result="int")
+        self.vs1.set_bounds(lower_bound=behaviours.output_1_MIN, upper_bound=behaviours.output_1_MAX)
+
+        self.vs2 = Vspeed(init_position=behaviours.output_2_INTITIAL, result="int")
+        self.vs2.set_bounds(lower_bound=behaviours.output_2_MIN, upper_bound=behaviours.output_2_MAX)
+
         self.last_energy = 0
         self.energy = 0
         self.timer = Timer()
@@ -41,16 +50,38 @@ class State_machines():
                 print("Energy level: "+str(self.energy))
 
     def behave(self, behaviours, mqtt_client):
-        # Hier moet denk ik de varspeed code output gekoppeld worden aan de behaviors in behaviours.py
+        # update energy
         self.checkEnergy(mqtt_client)
-        return
+        behaviours.energy = self.energy
 
-
+        # get values
         if self.state == 0:
-            behaviours.behaveNightNoCompany(self.energy)
+            output_1_value, running_1, changed_1 = self.vs1.sequence(sequence=behaviours.output_1_night_no_company_behaviour, loop_max=0)
+            output_2_value, running_2, changed_2 = self.vs2.sequence(sequence=behaviours.output_2_night_no_company_behaviour,
+                                                                     loop_max=0)
+            if changed_1 or changed_2:
+                behaviours.behave_night_no_company(output_1_value, output_2_value)
         elif self.state == 1:
-            behaviours.behaveNightCompany(self.energy)
+            output_1_value, running_1, changed_1 = self.vs1.sequence(sequence=behaviours.output_1_night_company_behaviour,
+                                                                     loop_max=0)
+            output_2_value, running_2, changed_2 = self.vs2.sequence(sequence=behaviours.output_2_night_company_behaviour,
+                                                                     loop_max=0)
+
+            if changed_1 or changed_2:
+                behaviours.behave_night_company(output_1_value, output_2_value)
         elif self.state == 2:
-            behaviours.behaveDayNoCompany(self.energy)
+            output_1_value, running_1, changed_1 = self.vs1.sequence(sequence=behaviours.output_1_day_no_company_behaviour,
+                                                                     loop_max=0)
+            output_2_value, running_2, changed_2 = self.vs2.sequence(sequence=behaviours.output_2_day_no_company_behaviour,
+                                                                     loop_max=0)
+
+            if changed_1 or changed_2:
+                behaviours.behave_day_no_company(output_1_value, output_2_value)
         else:
-            behaviours.behaveDayCompany(self.energy)
+            output_1_value, running_1, changed_1 = self.vs1.sequence(sequence=behaviours.output_1_day_company_behaviour,
+                                                                     loop_max=0)
+            output_2_value, running_2, changed_2 = self.vs2.sequence(sequence=behaviours.output_2_day_company_behaviour,
+                                                                     loop_max=0)
+
+            if changed_1 or changed_2:
+                behaviours.behave_day_company(output_1_value, output_2_value)

@@ -7,7 +7,7 @@ class Button():
     previous_button_value = False
     
     def __init__(self):
-        self.button = digitalio.DigitalInOut(board.D3)
+        self.button = digitalio.DigitalInOut(board.D2)
         self.button.direction = digitalio.Direction.INPUT
 
 

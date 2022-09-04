@@ -2,15 +2,18 @@
 # This file runs a statemachine with all required behaviours as states
 # Simply connect a button to D2, each button press will step to the next behaviour
 # Watch the serial monitor to determin which behaviour is active
+# 
 
 # --- Libraries
 import time
 import board
 import components.button
-import behaviours
+#import behaviours
 from varspeed import Vspeed
 from timer import Timer
 from components.button import Button
+from components.led import LED
+from components.servo_motor import Servo
 
 # --- Variables
 timer = Timer()
@@ -114,12 +117,17 @@ beautiful_ouptut2 = [
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
 
+output1 = LED(1)
+output2 = Servo()
+
 def run_behaviour(output1_sequence, output2_sequence):
     position_output1, running_output1, changed_output1 = vs_output1.sequence(sequence=output1_sequence, loop_max=1)
     position_output2, running_output2, changed_output2 = vs_output2.sequence(sequence=output2_sequence, loop_max=1)
     if changed_output1 == True:
         print("position_output1 = ", position_output1)
+        output1.update((0, position_output1, 0))
     if changed_output2 == True:
+        output2.update(position_output2)
         print("position_output2 = ", position_output2)
 
 # --- Main loop
@@ -164,3 +172,6 @@ while True:
             print("*** night_somebody behaviour")
         elif current_state == State.beautiful:
             print("*** beautiful behaviour")
+
+
+

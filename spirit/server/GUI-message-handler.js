@@ -93,15 +93,18 @@ export class GUIMessageHandler {
                 creature.addNeighbour(n)
             }
         }
+
     }
 
     sendNeighbours(guis) {
         const neighbourList = {}
-        for (let i = 0; i < this.creatures; i++) {
+        for (let i = 0; i < this.creatures.length; i++) {
             const creature = this.creatures[i]
+
             // Check if we should include this creature
             if (!creature || !creature.neighbours || creature.neighbours.length === 0)
                 continue
+
 
             // Add the neighbours
             const list = []
@@ -111,7 +114,6 @@ export class GUIMessageHandler {
             // save list
             neighbourList[i] = list
         }
-
         sendNeighboursGUIs(neighbourList, guis)
     }
 }
@@ -186,7 +188,6 @@ function sendTimeOutToGUIs(creature, guis) {
 }
 
 function sendNeighboursGUIs(list, guis) {
-    console.log("send list")
     for (let ws of guis) {
         ws.send(JSON.stringify({
             messageType: "neighbours",

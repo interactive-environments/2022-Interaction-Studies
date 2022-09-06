@@ -1,8 +1,9 @@
 # Creature behaviour testing made simple
 # This file runs a statemachine with all required behaviours as states
 # Simply connect a button to D2, each button press will step to the next behaviour
-# Watch the serial monitor to determin which behaviour is active
-# 
+# Watch the serial monitor to determine which behaviour is active
+# If you want the full experience then be sure to attach a Chainable LED to D13, an Analog Servo to D4 and a Sliding Potentiometer (slider) to A0
+#
 
 # --- Libraries
 import time
@@ -14,7 +15,9 @@ from timer import Timer
 from components.button import Button
 from components.led import LED
 from components.servo_motor import Servo
+from analogio import AnalogIn
 
+analog_in = AnalogIn(board.A0)
 # --- Variables
 timer = Timer()
 timer.set_duration(3)
@@ -50,14 +53,14 @@ vs_output2.set_bounds(lower_bound=MIN_OUTPUT2, upper_bound=MAX_OUTPUT2)
 
 # Behaviour sequences
 # The sequence is defined in this format: (next-position,seconds-to-move,number-of-steps,easing function)
-# Take a look at different easing functions here: https://easings.net 
+# Take a look at different easing functions here: https://easings.net
 day_nobody_output1 = [
    (MAX_OUTPUT1, 5, 10, "LinearInOut"),
    (MIN_OUTPUT1, 5, 10, "LinearInOut"),
 ]
 
 day_nobody_output2 = [
-   (MAX_OUTPUT2, 5, 5, "QuadEaseInOut"), 
+   (MAX_OUTPUT2, 5, 5, "QuadEaseInOut"),
    (MIN_OUTPUT2, 5, 5, "QuadEaseInOut")
 ]
 
@@ -70,8 +73,8 @@ day_somebody_output1 = [
    (0, 10.0, 11, "LinearInOut")
 ]
 
-day_somebody_ouptut2 = [
-   (10, 0.01, 1, "LinearInOut"), 
+day_somebody_output2 = [
+   (10, 0.01, 1, "LinearInOut"),
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
 
@@ -84,8 +87,8 @@ night_nobody_output1 = [
    (0, 10.0, 11, "LinearInOut")
 ]
 
-night_nobody_ouptut2 = [
-   (10, 0.01, 1, "LinearInOut"), 
+night_nobody_output2 = [
+   (10, 0.01, 1, "LinearInOut"),
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
 
@@ -98,8 +101,8 @@ night_somebody_output1 = [
    (0, 10.0, 11, "LinearInOut")
 ]
 
-night_somebody_ouptut2 = [
-   (10, 0.01, 1, "LinearInOut"), 
+night_somebody_output2 = [
+   (10, 0.01, 1, "LinearInOut"),
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
 
@@ -112,48 +115,53 @@ beautiful_output1 = [
    (0, 10.0, 11, "LinearInOut")
 ]
 
-beautiful_ouptut2 = [
-   (10, 0.01, 1, "LinearInOut"), 
+beautiful_output2 = [
+   (10, 0.01, 1, "LinearInOut"),
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
 
 output1 = LED(1)
 output2 = Servo()
 
-def run_behaviour(output1_sequence, output2_sequence):
+def run_behaviour(output1_sequence, output2_sequence, energy):
     position_output1, running_output1, changed_output1 = vs_output1.sequence(sequence=output1_sequence, loop_max=1)
     position_output2, running_output2, changed_output2 = vs_output2.sequence(sequence=output2_sequence, loop_max=1)
     if changed_output1 == True:
-        print("position_output1 = ", position_output1)
-        output1.update((0, position_output1, 0))
+        print("position_output1 = ", (position_output1 * (10+energy)/20))
+        output1.update((0, int(position_output1 * (10+energy)/20), 0))
     if changed_output2 == True:
-        output2.update(position_output2)
-        print("position_output2 = ", position_output2)
+        output2.update(int(position_output2 * (10+energy)/20))
+        print("position_output2 = ", (position_output2 * (10+energy)/20))
 
 # --- Main loop
 while True:
+    energy = int(analog_in.value*11/65536)
     if current_state == State.idle:
         if button.sense() == True:
             current_state = State.day_nobody
 
     elif current_state == State.day_nobody:
-        run_behaviour(day_nobody_output1, day_nobody_output2)
+        run_behaviour(day_nobody_output1, day_nobody_output2, energy)
         if button.sense() == True:
             current_state = State.day_somebody
 
     elif current_state == State.day_somebody:
+        run_behaviour(day_somebody_output1, day_somebody_output2, energy)
         if button.sense() == True:
             current_state = State.night_nobody
 
     elif current_state == State.night_nobody:
+        run_behaviour(night_nobody_output1, night_nobody_output2, energy)
         if button.sense() == True:
             current_state = State.night_somebody
 
     elif current_state == State.night_somebody:
+        run_behaviour(night_somebody_output1, night_somebody_output2, energy)
         if button.sense() == True:
             current_state = State.beautiful
 
     elif current_state == State.beautiful:
+        run_behaviour(beautiful_output1, beautiful_output2, energy)
         if button.sense() == True:
             current_state = State.idle
 
@@ -172,6 +180,8 @@ while True:
             print("*** night_somebody behaviour")
         elif current_state == State.beautiful:
             print("*** beautiful behaviour")
+    
+    time.sleep(0.01)
 
 
 

@@ -17,6 +17,8 @@ from components.led import LED
 from components.servo_motor import Servo
 from analogio import AnalogIn
 
+print("Running the behaviour test code.")
+
 analog_in = AnalogIn(board.A0)
 # --- Variables
 timer = Timer()

@@ -6,6 +6,7 @@
 #
 
 # --- Libraries
+from asyncore import loop
 import time
 import board
 import components.button
@@ -23,6 +24,8 @@ analog_in = AnalogIn(board.A0)
 # --- Variables
 timer = Timer()
 timer.set_duration(3)
+
+loops = 1
 
 # Working with a button to trigger behaviour changes
 button = Button()
@@ -66,6 +69,8 @@ day_nobody_output2 = [
    (MIN_OUTPUT2, 5, 5, "QuadEaseInOut")
 ]
 
+day_nobody_loops = 1
+
 day_somebody_output1 = [
    (0, 1.0, 1, "LinearInOut"),
    (10, 0.1, 2, "LinearInOut"),
@@ -79,6 +84,8 @@ day_somebody_output2 = [
    (10, 0.01, 1, "LinearInOut"),
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
+
+day_somebody_loops = 1
 
 night_nobody_output1 = [
    (0, 1.0, 1, "LinearInOut"),
@@ -94,6 +101,8 @@ night_nobody_output2 = [
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
 
+night_nobody_loops = 1
+
 night_somebody_output1 = [
    (0, 1.0, 1, "LinearInOut"),
    (10, 0.1, 2, "LinearInOut"),
@@ -107,6 +116,8 @@ night_somebody_output2 = [
    (10, 0.01, 1, "LinearInOut"),
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
+
+night_somebody_loops = 1
 
 beautiful_output1 = [
    (0, 1.0, 1, "LinearInOut"),
@@ -122,12 +133,14 @@ beautiful_output2 = [
    (MIN_OUTPUT2, 0.01, 1, "LinearInOut")
 ]
 
+beautiful_loops = 1
+
 output1 = LED(1)
 output2 = Servo()
 
 def run_behaviour(output1_sequence, output2_sequence, energy):
-    position_output1, running_output1, changed_output1 = vs_output1.sequence(sequence=output1_sequence, loop_max=1)
-    position_output2, running_output2, changed_output2 = vs_output2.sequence(sequence=output2_sequence, loop_max=1)
+    position_output1, running_output1, changed_output1 = vs_output1.sequence(sequence=output1_sequence, loop_max=loops)
+    position_output2, running_output2, changed_output2 = vs_output2.sequence(sequence=output2_sequence, loop_max=loops)
     if changed_output1 == True:
         print("position_output1 = ", (position_output1 * (10+energy)/20))
         output1.update((0, int(position_output1 * (10+energy)/20), 0))
@@ -141,31 +154,37 @@ while True:
     if current_state == State.idle:
         if button.sense() == True:
             current_state = State.day_nobody
+            loops = day_nobody_loops
 
     elif current_state == State.day_nobody:
         run_behaviour(day_nobody_output1, day_nobody_output2, energy)
         if button.sense() == True:
             current_state = State.day_somebody
+            loops = day_nobody_loops
 
     elif current_state == State.day_somebody:
         run_behaviour(day_somebody_output1, day_somebody_output2, energy)
         if button.sense() == True:
             current_state = State.night_nobody
+            loops = day_somebody_loops
 
     elif current_state == State.night_nobody:
         run_behaviour(night_nobody_output1, night_nobody_output2, energy)
         if button.sense() == True:
             current_state = State.night_somebody
+            loops = night_nobody_loops
 
     elif current_state == State.night_somebody:
         run_behaviour(night_somebody_output1, night_somebody_output2, energy)
         if button.sense() == True:
             current_state = State.beautiful
+            loops = night_somebody_loops
 
     elif current_state == State.beautiful:
         run_behaviour(beautiful_output1, beautiful_output2, energy)
         if button.sense() == True:
             current_state = State.idle
+            loops = beautiful_loops
 
     # Print the current state if it has changed
     if previous_state != current_state:

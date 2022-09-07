@@ -15,3 +15,6 @@ class ToF():
 
     def sense(self, distance):
         return self.vl53.range < distance
+
+    def sense_range(self):
+        return self.vl53.range

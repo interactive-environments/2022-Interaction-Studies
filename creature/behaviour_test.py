@@ -6,7 +6,7 @@
 #
 
 # --- Libraries
-from asyncore import loop
+
 import time
 import board
 import components.button
@@ -160,31 +160,31 @@ while True:
         run_behaviour(day_nobody_output1, day_nobody_output2, energy)
         if button.sense() == True:
             current_state = State.day_somebody
-            loops = day_nobody_loops
+            loops = day_somebody_loops
 
     elif current_state == State.day_somebody:
         run_behaviour(day_somebody_output1, day_somebody_output2, energy)
         if button.sense() == True:
             current_state = State.night_nobody
-            loops = day_somebody_loops
+            loops = night_nobody_loops
 
     elif current_state == State.night_nobody:
         run_behaviour(night_nobody_output1, night_nobody_output2, energy)
         if button.sense() == True:
             current_state = State.night_somebody
-            loops = night_nobody_loops
+            loops = night_somebody_loops
 
     elif current_state == State.night_somebody:
         run_behaviour(night_somebody_output1, night_somebody_output2, energy)
         if button.sense() == True:
             current_state = State.beautiful
-            loops = night_somebody_loops
+            loops = beautiful_loops
 
     elif current_state == State.beautiful:
         run_behaviour(beautiful_output1, beautiful_output2, energy)
         if button.sense() == True:
             current_state = State.idle
-            loops = beautiful_loops
+            loops = 1
 
     # Print the current state if it has changed
     if previous_state != current_state:

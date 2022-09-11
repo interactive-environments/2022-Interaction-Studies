@@ -3,7 +3,7 @@
 import board
 import digitalio
 
-class Vibration_Motor():
+class VibrationMotor():
     def __init__(self):
         self.motor = digitalio.DigitalInOut(board.D2)
         self.motor.direction = digitalio.Direction.OUTPUT

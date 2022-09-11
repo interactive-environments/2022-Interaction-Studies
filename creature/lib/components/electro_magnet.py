@@ -3,7 +3,7 @@
 import board
 import digitalio
 
-class Electro_Magnet():
+class ElectroMagnet():
     def __init__(self):
         self.magnet = digitalio.DigitalInOut(board.D3)
         self.magnet.direction = digitalio.Direction.OUTPUT

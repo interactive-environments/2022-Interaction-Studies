@@ -11,3 +11,6 @@ class Buzzer():
     def update(self, volume):
         scaledVolume = volume/100*16383
         self.buzzer.duty_cycle = int(scaledVolume)
+
+    def set_frequency(self, fq):
+        self.buzzer.frequency = fq

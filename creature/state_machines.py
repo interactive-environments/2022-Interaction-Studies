@@ -1,6 +1,5 @@
 from timer import Timer
 from settings import settings
-from varspeed import Vspeed
 
 class State_machines():
     def __init__(self, behaviours):
@@ -49,14 +48,15 @@ class State_machines():
             if not self.last_energy == self.energy:
                 print("Energy level: "+str(self.energy))
 
-    def behave(self, behaviours, mqtt_client):
+#     def behave(self, behaviours, mqtt_client):
+    def behave(self, behaviours):
         # update energy
-        self.checkEnergy(mqtt_client)
+#         self.checkEnergy(mqtt_client)
         behaviours.energy = self.energy
 
         # get values
         if self.state == 0:
-            output_1_value, running_1, changed_1 = self.vs1.sequence(sequence=behaviours.output_1_night_no_company_behaviour, loop_max=0)
+            output_1_value, running_1, changed_1 = self.vs1.sequence(behaviours.output_1_night_no_company_behaviour, loop_max=0)
             output_2_value, running_2, changed_2 = self.vs2.sequence(sequence=behaviours.output_2_night_no_company_behaviour,
                                                                      loop_max=0)
             if changed_1 or changed_2:

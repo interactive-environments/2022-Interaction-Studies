@@ -29,7 +29,7 @@ energy_input = AnalogInput()
 
 # Import the bahaviour rules
 # import behaviour_rules
-import behaviour_rules_creature09 as behaviour_rules
+import behaviour_rules_creature06 as behaviour_rules
 
 # Define the ouputs of creature01
 # output1 = LED(2)
@@ -53,8 +53,8 @@ import behaviour_rules_creature09 as behaviour_rules
 # output2 = ElectroMagnet()
 
 # Define the outputs of creature06
-# output1 = LED(1)
-# output2 = Buzzer()
+output1 = LED(1)
+output2 = Buzzer()
 
 # Define the outputs of creature07
 
@@ -63,8 +63,8 @@ import behaviour_rules_creature09 as behaviour_rules
 # output2 = Servo()
 
 # Define the outputs of creature09
-output1 = LED(1)
-output2 = Buzzer()
+# output1 = LED(1)
+# output2 = Buzzer()
 
 # Define the outputs of creature10
 
@@ -99,14 +99,18 @@ vs_output2 = Vspeed(init_position=0, result="int")
 # vs_output1.set_bounds(lower_bound=MIN_OUTPUT1, upper_bound=MAX_OUTPUT1)
 # vs_output2.set_bounds(lower_bound=MIN_OUTPUT2, upper_bound=MAX_OUTPUT2)
 
-def run_behaviour(output1_sequence, output2_sequence, loops):
+def run_behaviour(output1_sequence, output2_sequence, loops, state):
     position_output1, running_output1, changed_output1 = vs_output1.sequence(sequence=output1_sequence, loop_max=loops)
     position_output2, running_output2, changed_output2 = vs_output2.sequence(sequence=output2_sequence, loop_max=loops)
     if changed_output1 == True:
         position_output1 = int(position_output1 / 10 * energy_level)
 #        print("position_output1 = ", position_output1)
 #        output1.update_full_color((0, 0, position_output1))
-        output1.update(position_output1)
+#        output1.update(position_output1)
+        if state == State.day_nobody or state == State.day_somebody:
+            output1.update_full_color((0, 0, position_output1))
+        else:
+            output1.update_full_color((position_output1, 0, position_output1))
     if changed_output2 == True:
         position_output2 = int(position_output2 / 10 * energy_level)
 #        print("position_output2 = ", position_output2)
@@ -147,30 +151,30 @@ while True:
             current_state = State.day_nobody
 
     elif current_state == State.day_nobody:
-        run_behaviour(behaviour_rules.day_nobody_output1, behaviour_rules.day_nobody_output2, behaviour_rules.day_nobody_loops)
+        run_behaviour(behaviour_rules.day_nobody_output1, behaviour_rules.day_nobody_output2, behaviour_rules.day_nobody_loops, current_state)
         if step_behaviour_input.sense_release() == True:
             current_state = State.day_somebody
 
     elif current_state == State.day_somebody:
-        run_behaviour(behaviour_rules.day_somebody_output1, behaviour_rules.day_somebody_output2, behaviour_rules.day_somebody_loops)
+        run_behaviour(behaviour_rules.day_somebody_output1, behaviour_rules.day_somebody_output2, behaviour_rules.day_somebody_loops, current_state)
         if step_behaviour_input.sense_release() == True:
             current_state = State.night_nobody
 
     elif current_state == State.night_nobody:
-        run_behaviour(behaviour_rules.night_nobody_output1, behaviour_rules.night_nobody_output2, behaviour_rules.night_nobody_loops)
+        run_behaviour(behaviour_rules.night_nobody_output1, behaviour_rules.night_nobody_output2, behaviour_rules.night_nobody_loops, current_state)
         if step_behaviour_input.sense_release() == True:
             current_state = State.night_somebody
             loops = behaviour_rules.night_somebody_loops
 
     elif current_state == State.night_somebody:
-        run_behaviour(behaviour_rules.night_somebody_output1, behaviour_rules.night_somebody_output2, behaviour_rules.night_somebody_loops)
+        run_behaviour(behaviour_rules.night_somebody_output1, behaviour_rules.night_somebody_output2, behaviour_rules.night_somebody_loops, current_state)
         if step_behaviour_input.sense_release() == True:
             current_state = State.beautiful
             loops = behaviour_rules.beautiful_loops
 
     elif current_state == State.beautiful:
         energy_level = 10
-        run_behaviour(behaviour_rules.beautiful_output1, behaviour_rules.beautiful_output2, behaviour_rules.beautiful_loops)
+        run_behaviour(behaviour_rules.beautiful_output1, behaviour_rules.beautiful_output2, behaviour_rules.beautiful_loops, current_state)
         if step_behaviour_input.sense_release() == True:
             current_state = State.idle
 

@@ -4,20 +4,21 @@ import adafruit_minimqtt as miniMQTT
 
 class MQTT():
 
-    def __init__(self, wifi, state_machines):
+    def __init__(self, wifi, state, timeofday):
 
         try:
             from settings import settings
         except ImportError:
             print("WiFi settings are kept in settings.py, please add or change them there!")
             raise
-        self.state_machines = state_machines
+        self.state = state
+        self.timeofday = timeofday
         self.settings = settings
         self.wifi = wifi
         self.default_topic = "time-of-day"
         miniMQTT.set_socket(socket, self.wifi.esp)
         self.mqtt_client = miniMQTT.MQTT(
-            broker=settings["broker"], username=settings["user"], password=settings["token"], client_id = settings["clientid"]
+            broker=settings["broker"], port=1883, client_id = settings["clientid"]
         )
 
         self.mqtt_client.on_connect = self.connected
@@ -30,10 +31,15 @@ class MQTT():
 
     def message(self, client, topic, message):
         if topic == "time-of-day":
-            self.state_machines.setTime(int(message))
+#             print("day: ", int(message))
+            self.timeofday = int(message)
+            if int(message) == 0 and (self.state == 3 or self.state == 4):
+                self.state = self.state - 2
+            elif int(message) == 1 and (self.state == 1 or self.state == 2):
+                self.state = self.state + 2
         elif topic == "energy-increment-"+settings["clientid"]:
-            self.state_machines.incrementEnergy()
-        print("New message on topic {0}: {1}".format(topic, message))
+            self.energy = self.energy + 1
+#         print("New message on topic {0}: {1}".format(topic, message))
 
     ### MQTT connection functions ###
     def connected(self, client, userdata, flags, rc):

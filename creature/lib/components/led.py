@@ -12,7 +12,8 @@ class LED():
 
     # Update the LED with specified intensity for all three color channels
     def update(self, color):
-        color = max(0, min(color, 255))
+        intensity = max(color[0], max(color[1], color[2]))
+        color = max(0, min(intensity, 255))
         self.leds.fill((color, color, color))
         self.leds.write()
 

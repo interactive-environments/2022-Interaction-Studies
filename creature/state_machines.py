@@ -1,5 +1,6 @@
 from timer import Timer
 from settings import settings
+from varspeed import Vspeed
 
 class State_machines():
     def __init__(self, behaviours):

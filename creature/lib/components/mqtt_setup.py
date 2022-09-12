@@ -11,6 +11,7 @@ class MQTT():
         except ImportError:
             print("WiFi settings are kept in settings.py, please add or change them there!")
             raise
+        self.energy = 0
         self.state = state
         self.timeofday = timeofday
         self.settings = settings
@@ -18,7 +19,7 @@ class MQTT():
         self.default_topic = "time-of-day"
         miniMQTT.set_socket(socket, self.wifi.esp)
         self.mqtt_client = miniMQTT.MQTT(
-            broker=settings["broker"], port=1883, client_id = settings["clientid"]
+            broker=self.settings["broker"], port=1883, client_id = self.settings["clientid"]
         )
 
         self.mqtt_client.on_connect = self.connected
@@ -27,7 +28,7 @@ class MQTT():
 
         print("Connecting to MQTT broker...")
         self.mqtt_client.connect()
-        self.mqtt_client.publish("names", settings["displayname"] + "-" + settings["clientid"])
+        self.mqtt_client.publish("names", self.settings["displayname"] + "-" + settings["clientid"])
 
     def message(self, client, topic, message):
         if topic == "time-of-day":
@@ -37,8 +38,8 @@ class MQTT():
                 self.state = self.state - 2
             elif int(message) == 1 and (self.state == 1 or self.state == 2):
                 self.state = self.state + 2
-        elif topic == "energy-increment-"+settings["clientid"]:
-            self.energy = self.energy + 1
+        elif topic == "energy-increment-"+self.settings["clientid"]:
+            self.energy = int(message)
 #         print("New message on topic {0}: {1}".format(topic, message))
 
     ### MQTT connection functions ###
@@ -49,6 +50,10 @@ class MQTT():
 
     def disconnected(self, client, userdata, rc):
         print("Disconnected from MQTT Broker!")
+
+    def updateEnergy(self, energy_level):
+        self.energy = energy_level
+        self.mqtt_client.publish("energy-level", self.settings["clientid"] + ", " + str(self.energy))
 
     def loop(self):
         try:

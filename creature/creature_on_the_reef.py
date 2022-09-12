@@ -2,8 +2,8 @@
 # Time of day has to be set manually - try it out by changing variable current_time_of_day
 # Energyy level is high when somebody is at the sensor - low when nobody is there
 #
-ENERGY_INCREASE_TIME = 10 # in seconds
-ENERGY_DECREASE_TIME = 20 # in seconds
+ENERGY_INCREASE_TIME = 1 # in seconds
+ENERGY_DECREASE_TIME = 2 # in seconds
 BEAUTIFUL_TIME = 180 # in seconds
 energy_level = 0
 
@@ -78,7 +78,7 @@ creature_input = AnalogInput()
 nobody_timer = Timer()
 nobody_timer.set_duration(5)
 beautiful_timer = Timer()
-beautiful_timer.set_duration(10)
+beautiful_timer.set_duration(BEAUTIFUL_TIME)
 beautiful_timer.start()
 
 # State machine variables
@@ -151,22 +151,27 @@ def map_to_range(x, fromMin, fromMax, toMin, toMax):
    result = z + toMin
    return result # Return
 
-def checkEnergy(day):
+def checkEnergy(company):
     global energy_level
     if nobody_timer.expired():
-        if day:
+        if company:
             energy_level = min(10, energy_level+1)
+            print(energy_level)
         else:
             energy_level = max(0, energy_level-1)
+        mqtt.updateEnergy(energy_level)
         nobody_timer.start()
 
 print("*** Running a Creature on the reef...")
 
 # --- Main loop
 while True:
-    current_time_of_day = mqtt.timeofday
-    current_state = mqtt.state
     mqtt.loop()
+
+    current_time_of_day = mqtt.timeofday
+    #current_state = mqtt.state
+    energy_level = mqtt.energy
+
     # Determine the daytime and if somebody is present
     if current_time_of_day == Timeofday.day:
         if creature_input.sense(40000) == True:

@@ -15,6 +15,6 @@
 #      *  . ..  //#*(**%      ( *,/*(/ %*#(/* .. #/,(&* ./(&    ,&*.% , ..*
 #  *****************************************************************************
 
-import behaviour_designer
+#import behaviour_designer
 #import creature_individual
-#import creature_on_the_reef
+import creature_on_the_reef

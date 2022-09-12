@@ -2,7 +2,9 @@
 # Time of day has to be set manually - try it out by changing variable current_time_of_day
 # Energyy level is high when somebody is at the sensor - low when nobody is there
 #
-
+ENERGY_INCREASE_TIME = 10 # in seconds
+ENERGY_DECREASE_TIME = 20 # in seconds
+energy_level = 0
 # --- Libraries
 import time
 import board
@@ -138,6 +140,15 @@ def map_to_range(x, fromMin, fromMax, toMin, toMax):
    result = z + toMin
    return result # Return
 
+def checkEnergy(day):
+    global energy_level
+    if nobody_timer.expired():
+        if day:
+            energy_level = min(10, energy_level+1)
+        else:
+            energy_level = max(0, energy_level-1)
+        nobody_timer.start()
+
 print("*** Running a Creature working individually...")
 
 # --- Main loop
@@ -145,31 +156,43 @@ while True:
     # Determine the daytime and if somebody is present
     if current_time_of_day == Timeofday.day:
         if creature_input.sense(40000) == True:
-            energy_level = 10
-            current_state = State.day_somebody
+            if current_state != State.day_somebody:
+                nobody_timer.set_duration(ENERGY_INCREASE_TIME)
+                nobody_timer.start()
+                current_state = State.day_somebody
         else:
-            energy_level = 1
-            current_state = State.day_nobody
+            if current_state != State.day_nobody:
+                nobody_timer.set_duration(ENERGY_DECREASE_TIME)
+                nobody_timer.start()
+                current_state = State.day_nobody
 
     if current_time_of_day == Timeofday.night:
         if creature_input.sense(40000) == True:
-            energy_level = 10
-            current_state = State.night_somebody
+            if current_state != State.night_somebody:
+                nobody_timer.set_duration(ENERGY_INCREASE_TIME)
+                nobody_timer.start()
+                current_state = State.night_somebody
         else:
-            energy_level = 1
-            current_state = State.night_nobody
+            if current_state != State.night_nobody:
+                nobody_timer.set_duration(ENERGY_DECREASE_TIME)
+                nobody_timer.start()
+                current_state = State.night_nobody
 
     # Check which behaviour we have to run
     if current_state == State.day_nobody:
+        checkEnergy(False)
         run_behaviour(behaviour_rules.day_nobody_output1, behaviour_rules.day_nobody_output2, behaviour_rules.day_nobody_loops, current_state)
 
     elif current_state == State.day_somebody:
+        checkEnergy(True)
         run_behaviour(behaviour_rules.day_somebody_output1, behaviour_rules.day_somebody_output2, behaviour_rules.day_somebody_loops, current_state)
 
     elif current_state == State.night_nobody:
+        checkEnergy(False)
         run_behaviour(behaviour_rules.night_nobody_output1, behaviour_rules.night_nobody_output2, behaviour_rules.night_nobody_loops, current_state)
 
     elif current_state == State.night_somebody:
+        checkEnergy(True)
         run_behaviour(behaviour_rules.night_somebody_output1, behaviour_rules.night_somebody_output2, behaviour_rules.night_somebody_loops, current_state)
 
     elif current_state == State.beautiful:

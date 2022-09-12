@@ -1,9 +1,7 @@
 settings = {
-   "ssid": "your_ssid",
-   "password": "your_password",
-    "broker": "greatinteractivereef.cloud.shiftr.io",
-    "user": "greatinteractivereef",
-    "token": "YbOk0JfBm8dtVkW3",
+   "ssid": "great interactive reef",
+   "password": "interactive",
+    "broker": "192.168.1.144",
     "clientid": "0", #your groupnumber
     "displayname": "mycreature" #your creature name
 }

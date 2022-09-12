@@ -1,1 +1,4 @@
 .DS_Store
+spirit/server/node_modules/
+
+spirit/server/package-lock.json

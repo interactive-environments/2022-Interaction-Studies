@@ -35,15 +35,15 @@ let dayNightTimer = 18000;
 let lastSwitch;
 
 // Server connection
-const socket = new WebSocket('wss://node.bykrijgsman.com');
+const socket = new WebSocket('ws://192.168.1.144:3001');
 
 socket.addEventListener('open', function (event) {
   print("Connected to server")
   updateInterval();
   
-    let timeDay = 0;
+    let timeDay = 1;
   if (day == true){
-    timeDay = 1;
+    timeDay = 0;
   }
   
   socket.send(JSON.stringify({
@@ -70,7 +70,7 @@ socket.addEventListener('message', function (event) {
       }
       if(data.messageType == "neighbours"){
         print(data)
-        //updateNeighbors(data);
+        updateNeighbors(data);
       }
     }
 });
@@ -108,56 +108,7 @@ function setup() {
   sunx = windowWidth - 270;
   textFont('Roboto');
   
-  // Creatures
   initSpirit();
-  
-//   for(i = 0; i < 16; i++){
-//   jsonString = JSON.stringify({
-//     "messageType": "addCreature",
-//     "name": "creature"+i+"-" + i,
-//     "energy": random(0, 10),
-//     "neighbors": []
-//   });
-    
-//   if (JSON.parse(jsonString).messageType == "addCreature"){
-//      addCreature(JSON.parse(jsonString)); 
-//     }
-//   }
-  
-//   jsonString = JSON.stringify(
-//   {
-//     messageType: "neighbours",
-//     name: "name",
-//     neighbours: {
-//     0: [1,14],
-//     1: [0,2],
-//     2: [1,3],
-//     3: [2,4],
-//     4: [3,5],
-//     5: [4,6],
-//     6: [5,7],
-//     7: [6,8],
-//     8: [7,9],
-//     9: [8,10],
-//     10: [9,11],
-//     11: [10,12],
-//     12: [11,13],
-//     13: [12,14],
-//     14: [13,0]  
-//     }
-//   });
-  
-//   updateNeighbors(JSON.parse(jsonString));
-    
-  
-  // Time pulse
-  timeSlider = createSlider(5, 15, 0);
-  timeSlider.position(10, 190);
-  timeSlider.style('width', '200px');
-  timeSlider.addClass("mySliders");
-  lastPulse = millis();
-  lastSwitch = millis();
-  this.timePulse = timeSlider.value();
 }
 
 function setBG(){
@@ -167,26 +118,26 @@ function setBG(){
           dayScale -= 0.01;
         } 
       
-          if(sunx < windowWidth - 270){
-      sunx += 8;
-      moonx += 8;
-    }
-    else if (moonx > windowWidth){
-      moonx = -270;
-    }
-      break;
+      if(sunx < windowWidth - 270){
+        sunx += 8;
+        moonx += 8;
+      }
+      else if (moonx > windowWidth){
+        moonx = -270;
+      }
+        break;
 
     case false:
-    if (dayScale < 1.0){
-        dayScale += 0.01;
+      if (dayScale < 1.0){
+          dayScale += 0.01;
+        }
+      if(moonx < windowWidth - 270){
+        sunx += 8;
+        moonx += 8;
       }
-          if(moonx < windowWidth - 270){
-      sunx += 8;
-      moonx += 8;
-    }
-    else if (sunx > windowWidth){
-      sunx = -270;
-    }
+      else if (sunx > windowWidth){
+        sunx = -270;
+      }
       break;
 
     default:
@@ -206,32 +157,6 @@ function draw() {
   setBG();
   fill(255)
   textSize(14)
-  
-  // Daynight
-  if(millis() > lastSwitch + dayNightTimer){
-    switchDayNight();
-    lastSwitch = millis();
-  } 
-  
-  // Time pulse
-  if (this.timePulse != timeSlider.value()){
-    updateInterval();
-    countDown = lastPulse + timeSlider.value()*1000;
-  }
-  if (millis() > countDown){
-    countDown = lastPulse + timeSlider.value()*1000;
-  }
-  
-  blendMode(DIFFERENCE)
-    let timeLeft = Math.round((countDown - millis())/1000);
-    if (timeLeft < 0){
-      timeLeft = 0;
-    }
-   text("One pulse every " + timeSlider.value() + " seconds. Time left: " + timeLeft, 10, 170)   
-  
-  blendMode(BLEND)
-
-  
   
   if (pulseOpacity > 100){
     pulseOpacity -= 2;
@@ -302,7 +227,10 @@ function windowResized() {
 
 function buttonSetup(){
   this.dayButton = createButton("Make Night");
-  this.dayButton.position(10, 220);
+  this.dayButton.position(10, 20);
+  this.dayButton.style('background-color', color(255, 255, 255, 150));
+  this.dayButton.style('padding', "8px")
+  this.dayButton.style('border', "none")
   this.dayButton.mousePressed(() => {
     switchDayNight();
   });
@@ -319,9 +247,9 @@ function updateInterval(){
 
 function switchDayNight(){
     day = !day;
-  let timeDay = 0;
+  let timeDay = 1;
   if (day == true){
-    timeDay = 1;
+    timeDay = 0;
   }
     
     socket.send(JSON.stringify({

@@ -4,7 +4,8 @@
 #
 ENERGY_INCREASE_TIME = 10 # in seconds
 ENERGY_DECREASE_TIME = 20 # in seconds
-energy_level = 0
+BEAUTIFUL_TIME = 180 # in seconds
+energy_level = 0 
 # --- Libraries
 import time
 import board
@@ -75,6 +76,9 @@ step_behaviour_input = Button()
 # --- Variables
 nobody_timer = Timer()
 nobody_timer.set_duration(5)
+beautiful_timer = Timer()
+beautiful_timer.set_duration(10)
+beautiful_timer.start()
 
 # State machine variables
 class State():
@@ -156,6 +160,7 @@ while True:
     # Determine the daytime and if somebody is present
     if current_time_of_day == Timeofday.day:
         if creature_input.sense(40000) == True:
+            beautiful_timer.start()
             if current_state != State.day_somebody:
                 nobody_timer.set_duration(ENERGY_INCREASE_TIME)
                 nobody_timer.start()
@@ -165,9 +170,13 @@ while True:
                 nobody_timer.set_duration(ENERGY_DECREASE_TIME)
                 nobody_timer.start()
                 current_state = State.day_nobody
+            if beautiful_timer.expired():
+               current_state = State.beautiful 
+                
 
     if current_time_of_day == Timeofday.night:
         if creature_input.sense(40000) == True:
+            beautiful_timer.start()
             if current_state != State.night_somebody:
                 nobody_timer.set_duration(ENERGY_INCREASE_TIME)
                 nobody_timer.start()
@@ -177,6 +186,8 @@ while True:
                 nobody_timer.set_duration(ENERGY_DECREASE_TIME)
                 nobody_timer.start()
                 current_state = State.night_nobody
+            if beautiful_timer.expired():
+               current_state = State.beautiful 
 
     # Check which behaviour we have to run
     if current_state == State.day_nobody:

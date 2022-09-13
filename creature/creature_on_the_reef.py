@@ -119,7 +119,7 @@ def run_behaviour(output1_sequence, output2_sequence, loops, state):
     position_output1, running_output1, changed_output1 = vs_output1.sequence(sequence=output1_sequence, loop_max=loops)
     position_output2, running_output2, changed_output2 = vs_output2.sequence(sequence=output2_sequence, loop_max=loops)
     if changed_output1 == True:
-        position_output1 = int(position_output1 / 10 * energy_level)
+        position_output1 = int(position_output1 * 0.5 + position_output1 / 20 * energy_level)
 #        print("position_output1 = ", position_output1)
 #        output1.update_full_color((0, 0, position_output1))
 #        output1.update(position_output1)
@@ -129,7 +129,7 @@ def run_behaviour(output1_sequence, output2_sequence, loops, state):
             output1.update_full_color((position_output1, 0, position_output1))
 
     if changed_output2 == True:
-        position_output2 = int(position_output2 / 10 * energy_level)
+        position_output2 = int(position_output1 * 0.5 + position_output1 / 20 * energy_level)
 #        print("position_output2 = ", position_output2)
         output2.update(position_output2)
 

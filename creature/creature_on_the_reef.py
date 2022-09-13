@@ -5,6 +5,7 @@
 ENERGY_INCREASE_TIME = 1 # in seconds
 ENERGY_DECREASE_TIME = 2 # in seconds
 BEAUTIFUL_TIME = 180 # in seconds
+TIME_BEING_BEAUTIFUL = 10
 energy_level = 0
 
 # --- Libraries
@@ -80,6 +81,8 @@ nobody_timer.set_duration(5)
 beautiful_timer = Timer()
 beautiful_timer.set_duration(BEAUTIFUL_TIME)
 beautiful_timer.start()
+beautiful_timer2 = Timer()
+beautiful_timer2.set_duration(TIME_BEING_BEAUTIFUL)
 
 # State machine variables
 class State():
@@ -169,7 +172,6 @@ while True:
     mqtt.loop()
 
     current_time_of_day = mqtt.timeofday
-    #current_state = mqtt.state
     energy_level = mqtt.energy
 
     # Determine the daytime and if somebody is present
@@ -186,7 +188,7 @@ while True:
                 nobody_timer.start()
                 current_state = State.day_nobody
             if beautiful_timer.expired():
-               current_state = State.beautiful
+                current_state = State.beautiful
 
 
     if current_time_of_day == Timeofday.night:
@@ -202,7 +204,10 @@ while True:
                 nobody_timer.start()
                 current_state = State.night_nobody
             if beautiful_timer.expired():
-               current_state = State.beautiful
+                if previous_state != State.beautiful:
+                    print("start")
+                    beautiful_timer2.start()
+                current_state = State.beautiful
 
     # Check which behaviour we have to run
     if current_state == State.day_nobody:
@@ -224,6 +229,9 @@ while True:
     elif current_state == State.beautiful:
         energy_level = 10
         run_behaviour(behaviour_rules.beautiful_output1, behaviour_rules.beautiful_output2, behaviour_rules.beautiful_loops, current_state)
+        if beautiful_timer2.expired():
+            energy_level = 0
+            beautiful_timer.start()
 
     # Print the current state if it has changed
     if previous_state != current_state:
@@ -239,4 +247,4 @@ while True:
         elif current_state == State.beautiful:
             print("*** beautiful behaviour")
 
-    time.sleep(0.1)
+    time.sleep(0.01)

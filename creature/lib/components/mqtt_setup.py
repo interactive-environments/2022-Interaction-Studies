@@ -1,6 +1,11 @@
 # mqtt_setup.py
 import adafruit_esp32spi.adafruit_esp32spi_socket as socket
 import adafruit_minimqtt as miniMQTT
+from timer import Timer
+
+loop_timer = Timer()
+loop_timer.set_duration(5)
+loop_timer.start()
 
 class MQTT():
 
@@ -39,8 +44,8 @@ class MQTT():
             elif int(message) == 1 and (self.state == 1 or self.state == 2):
                 self.state = self.state + 2
         elif topic == "energy-increment-"+self.settings["clientid"]:
-            self.energy = int(message)
-#         print("New message on topic {0}: {1}".format(topic, message))
+            updateEnergy(int(message))
+    #         print("New message on topic {0}: {1}".format(topic, message))
 
     ### MQTT connection functions ###
     def connected(self, client, userdata, flags, rc):
@@ -56,9 +61,11 @@ class MQTT():
         self.mqtt_client.publish("energy-level", self.settings["clientid"] + ", " + str(self.energy))
 
     def loop(self):
-        try:
-            self.mqtt_client.loop()
-        except (ValueError, RuntimeError) as e:
-            print("Failed to get data, retrying\n", e)
-            self.wifi.reset()
-            self.mqtt_client.reconnect()
+        if loop_timer.expired():
+            loop_timer.start()
+            try:
+                self.mqtt_client.loop()
+            except (ValueError, RuntimeError) as e:
+                print("Failed to get data, retrying\n", e)
+                self.wifi.reset()
+                self.mqtt_client.reconnect()

@@ -129,7 +129,7 @@ def run_behaviour(output1_sequence, output2_sequence, loops, state):
             output1.update_full_color((position_output1, 0, position_output1))
 
     if changed_output2 == True:
-        position_output2 = int(position_output1 * 0.5 + position_output1 / 20 * energy_level)
+        position_output2 = int(position_output2 * 0.5 + position_output2 / 20 * energy_level)
 #        print("position_output2 = ", position_output2)
         output2.update(position_output2)
 

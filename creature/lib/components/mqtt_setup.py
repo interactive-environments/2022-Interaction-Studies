@@ -44,7 +44,7 @@ class MQTT():
             elif int(message) == 1 and (self.state == 1 or self.state == 2):
                 self.state = self.state + 2
         elif topic == "energy-increment-"+self.settings["clientid"]:
-            updateEnergy(int(message))
+            self.updateEnergy(int(message))
     #         print("New message on topic {0}: {1}".format(topic, message))
 
     ### MQTT connection functions ###

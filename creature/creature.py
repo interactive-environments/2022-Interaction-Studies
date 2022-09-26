@@ -1,111 +1,115 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
+# This is the creature file.
+# This file specifies the physic of the creature.
+# In here you will specify what inputs and outputs the creature has.
 
-import time
-from timer import Timer
-timer = Timer()
-timer.set_duration(3)
-import board
-import busio
-from digitalio import DigitalInOut
-import neopixel
-from adafruit_esp32spi import adafruit_esp32spi
-from adafruit_esp32spi import adafruit_esp32spi_wifimanager
-import adafruit_esp32spi.adafruit_esp32spi_socket as socket
-import adafruit_minimqtt as MQTT
+# TODO Ecosystem or Behaviour Creator mode
+# TODO This loads the mqtt or adds a button for the state changes
 
-print("Running the Great interactive reef code.")
+# -------------------------------
+# ---------  THE LIMBS ----------
+# -------------------------------
 
-### WiFi ###
-# Get wifi details and more from a secrets.py file
-# try:
-#     from settings import settings
-# except ImportError:
-#     print("WiFi settings are kept in settings.py, please add or change them there!")
-#     raise
+# ----------- THE INPUT ---------
+# here we register what input the creature uses
+# uncomment one of the import lines to use that input component
+from components.button import Button
+# from components.analog_input import AnalogInput
+# from components.slider import Slider
+# from components.tof import Tof
 
-import components.ToF
+input = Button()
 
-import behaviours
-import senses
+# -------------------------------
 
-from state_machines import State_machines
-state_machines = State_machines(behaviours=behaviours)
+# ----------- OUTPUT 1 ---------
+# here we register the first output for the creature
+# uncomment one of the import lines to use that output component
+from componetns.Buzzer import Buzzer
+
+output_1 = Buzzer()
+
+# -------------------------------
 
 
-# If you have an externally connected ESP32:
-# esp32_cs = DigitalInOut(board.D9)               # Chip select pin
-# esp32_ready = DigitalInOut(board.D11)           # BUSY or READY pin
-# esp32_reset = DigitalInOut(board.D12)           # Reset pin
+# ----------- OUTPUT 2 ---------
+# here we register what input the creature uses
+# uncomment one of the import lines to use that output component
+from components.Buzzer import Buzzer
 
-# spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-# esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
+output_2 = Buzzer()
 
-# wifi = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, settings)
+# -------------------------------
 
-# Setup a feed named `testfeed` for publishing.
-# default_topic = "time-of-day"
 
-### Code ###
+# -------------------------------
+# ---------  THE BRAIN ----------
+# -------------------------------
+# Below here we load all the helper functions needed to execute all behaviour and keep track of the states.
+# You should not need to change anything below here.
+# In order to change the behaviour take a look at the behaviour files.
+from behaviour import Behaviour
+from state_machines import StateMachine
 
-### Helper functions ###
-# def message(client, topic, message):
-#     if topic == "time-of-day":
-#         state_machines.setTime(int(message))
-#     elif topic == "energy-increment-"+settings["clientid"]:
-#         state_machines.incrementEnergy()
-#     print("New message on topic {0}: {1}".format(topic, message))
+state_machine = StateMachine()
 
-### MQTT connection functions ###
-# def connected(client, userdata, flags, rc):
-#     print("Connected to MQTT broker! Listening for topic changes on %s" % default_topic)
-#     client.subscribe("time-of-day")
-#     client.subscribe("energy-increment-"+settings["clientid"])
+# ----------- BEHAVIOUR ---------
+# Here we load all types of behaviour the creature could display
 
-# def disconnected(client, userdata, rc):
-#     print("Disconnected from MQTT Broker!")
+# TODO make a Idle behaviour that sets all outputs to off
+# -- Behaviour 1: Idle
+state_machine.states[0] = Behaviour("Idle")
+# -----
 
-# Connect to WiFi
-# print("Connecting to WiFi...")
-# wifi.connect()
-# print("Connected!")
+# -- Behaviour 2: Day time - Nobody
+import behaviour_day_nobody as behaviour_2
+state_machine.states[1] = Behaviour(
+    "Day_Nobody",
+    behaviour_2.OUTPUT_1_SEQUENCE,
+    behaviour_2.OUTPUT_2_SEQUENCE,
+    behaviour_2.update_outputs)
+# ----
 
-# MQTT.set_socket(socket, esp)
-# mqtt_client = MQTT.MQTT(
-#     broker=settings["broker"], username=settings["user"], password=settings["token"], client_id = settings["clientid"]
-# )
+# -- Behaviour 3: Day time - Somebody
+import behaviour_day_somebody as behaviour_3
+state_machine.states[2] = Behaviour(
+    "Day_Somebody",
+    behaviour_3.OUTPUT_1_SEQUENCE,
+    behaviour_3.OUTPUT_2_SEQUENCE,
+    behaviour_3.update_outputs)
+# ----
 
-# mqtt_client.on_connect = connected
-# mqtt_client.on_disconnect = disconnected
-# mqtt_client.on_message = message
+# -- Behaviour 4: Night time - Nobody
+import behaviour_night_nobody as behaviour_4
+state_machine.states[3] = Behaviour(
+    "Night_Nobody",
+    behaviour_4.OUTPUT_1_SEQUENCE,
+    behaviour_4.OUTPUT_2_SEQUENCE,
+    behaviour_4.update_outputs)
+# ----
 
-# print("Connecting to MQTT broker...")
-# mqtt_client.connect()
-# mqtt_client.publish("names", settings["displayname"] + "-" + settings["clientid"])
+# -- Behaviour 5: Night time - Somebody
+import behaviour_night_somebody as behaviour_5
+state_machine.states[4] = Behaviour(
+    "Night_Somebody",
+    behaviour_5.OUTPUT_1_SEQUENCE,
+    behaviour_5.OUTPUT_2_SEQUENCE,
+    behaviour_5.update_outputs)
+# ----
 
-while True:
-    senses.sense(state_machines)
-#     state_machines.behave(behaviours, mqtt_client)
-    state_machines.behave(behaviours)
+# -- Behaviour 6: Beautiful
+import behaviour_beautiful as behaviour_6
+state_machine.states[5] = Behaviour(
+    "Beautiful",
+    behaviour_6.OUTPUT_1_SEQUENCE,
+    behaviour_6.OUTPUT_2_SEQUENCE,
+    behaviour_6.update_outputs)
+# ----
 
-#     print(last_state, state_machines.state)
-    if (state_machines.last_state == 0 or state_machines.last_state == 2) and (state_machines.state == 1 or state_machines.state == 3):
-        print("Presence detected")
-    elif (state_machines.last_state == 1 or state_machines.last_state == 3) and (state_machines.state == 0 or state_machines.state == 2):
-        print("Presence no longer detected")
+# -------------------------------
 
-    if (state_machines.last_state == 0 or state_machines.last_state == 1) and (state_machines.state == 2 or state_machines.state == 3):
-        print("It is now daytime.")
-    if (state_machines.last_state == 2 or state_machines.last_state == 3) and (state_machines.state == 0 or state_machines.state == 1):
-        print("It is now nighttime.")
+# -------- STATE CHANGES --------
 
-    if timer.expired:
-        timer.start()
-#         try:
-#             mqtt_client.loop()
-#         except (ValueError, RuntimeError) as e:
-#             print("Failed to get data, retrying\n", e)
-#             wifi.reset()
-#             mqtt_client.reconnect()
-#             continue
-    time.sleep(0.01)
+# TODO state transition rules
+
+# -------------------------------
+

@@ -2,17 +2,14 @@ from timer import Timer
 from settings import settings
 from varspeed import Vspeed
 
-# TODO rework state machine to allow dynamic transitions
-class StateMachine():
-    def __init__(self):
+class State_machines():
+    def __init__(self, behaviours):
 
         self.vs1 = Vspeed(init_position=behaviours.output_1_INTITIAL, result="int")
         self.vs1.set_bounds(lower_bound=behaviours.output_1_MIN, upper_bound=behaviours.output_1_MAX)
 
         self.vs2 = Vspeed(init_position=behaviours.output_2_INTITIAL, result="int")
         self.vs2.set_bounds(lower_bound=behaviours.output_2_MIN, upper_bound=behaviours.output_2_MAX)
-
-        self.states = []
 
         self.last_energy = 0
         self.energy = 0

@@ -15,6 +15,6 @@
 #      *  . ..  //#*(**%      ( *,/*(/ %*#(/* .. #/,(&* ./(&    ,&*.% , ..*
 #  *****************************************************************************
 
-# This file loads the creature code.
-import creature
-
+#import behaviour_designer
+#import creature_individual
+import creature_on_the_reef
